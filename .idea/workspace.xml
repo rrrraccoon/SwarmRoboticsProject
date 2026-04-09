@@ -5,16 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="71f2c074-bc0a-43e3-aef1-a0abeb046e97" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/SwarmRobotics/.idea/SwarmRobotics.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/SwarmRobotics/Main.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/SwarmRobotics/Robot.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/SwarmRobotics/Survivor.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/SwarmRobotics/Transport.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/SwarmRobotics/dispersion.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/SwarmRobotics/exploration.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/SwarmRobotics/sequential_dispersion.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/SwarmRobotics/transportation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SwarmRobotics/Robot.py" beforeDir="false" afterPath="$PROJECT_DIR$/SwarmRobotics/Robot.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SwarmRobotics/sequential_dispersion.py" beforeDir="false" afterPath="$PROJECT_DIR$/SwarmRobotics/sequential_dispersion.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -41,11 +35,14 @@
     &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/sidra/PycharmProjects/SwarmRoboticsProject&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/sidra/PycharmProjects/SwarmRoboticsProject/SwarmRobotics/fonts&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
 }</component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\sidra\PycharmProjects\SwarmRoboticsProject\SwarmRobotics\fonts" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\sidra\PycharmProjects\SwarmRoboticsProject" />
     </key>
@@ -139,21 +136,6 @@
       <option name="docutils_params" value="" />
       <option name="docutils_task" value="" />
       <option name="docutils_open_in_browser" value="false" />
-      <method v="2" />
-    </configuration>
-    <configuration default="true" type="tests" factoryName="Autodetect">
-      <module name="SwarmRobotics" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;&quot;" />
-      <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
     <configuration default="true" type="tests" factoryName="Doctests">

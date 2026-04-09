@@ -1,7 +1,5 @@
 import math
-
 import pygame
-
 
 def disperse_positions(swarm, updateSwarm, survivor):
     learning_rate = 50
@@ -136,7 +134,7 @@ def calculateRSS(x_position, y_position, anchor):
     rss = 1/distance
     return rss
 
-#passes values into calculateRSS for each anchor the adds
+#passes values into calculateRSS for each anchor then adds
 def calculateTotalRSS(x_position, y_position, anchors):
     total = 0
     for a in anchors:

@@ -13,7 +13,7 @@ class Robot:
     def __init__(self, swarm_size):
 
         #initially random positions within the centre area
-        self.position = self.get_random_position()
+        self.position = self.random_position()
         self.position_x, self.position_y = self.position[0], self.position[1]
         #initially red
         self.robot_colour = pygame.Color(255, 0, 0)
@@ -47,7 +47,7 @@ class Robot:
     def get_assigned_survivor(self):
         return self.assigned_survivor
 
-    def get_random_position(self):
+    def random_position(self):
         #get random number within bounds of environment and considering radius of robot
         position = []
         #to restrict initial swarm to be in a smaller area in center
