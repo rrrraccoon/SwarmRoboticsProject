@@ -12,7 +12,7 @@ class Survivor:
 
     def __init__(self):
         #initially random positions within the centre area
-        self.position = self.get_random_position()
+        self.position = self.random_position()
         self.position_x, self.position_y = self.position[0], self.position[1]
         #
         self.survivor_colour = pygame.Color(0, 0, 255)
@@ -24,7 +24,7 @@ class Survivor:
         self.found = True
 
         #+100 makes it so that it doesnt spawn within safe zone
-    def get_random_position(self):
+    def random_position(self):
         #get random number within bounds of environment and considering radius of robot
         position = []
         #get random x value
@@ -56,8 +56,8 @@ class Survivor:
         self.position_y = new_y
         self.position[1] = new_y
 
-    def set_colour(self, robot_colour):
-        self.survivor_colour = robot_colour
+    def set_colour(self, survivor_colour):
+        self.survivor_colour = survivor_colour
 
     #draw the survivor instance
     def display_survivor(self, screen):
