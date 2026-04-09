@@ -7,8 +7,7 @@
     <list default="true" id="71f2c074-bc0a-43e3-aef1-a0abeb046e97" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SwarmRobotics/Robot.py" beforeDir="false" afterPath="$PROJECT_DIR$/SwarmRobotics/Robot.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SwarmRobotics/sequential_dispersion.py" beforeDir="false" afterPath="$PROJECT_DIR$/SwarmRobotics/sequential_dispersion.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SwarmRobotics/Survivor.py" beforeDir="false" afterPath="$PROJECT_DIR$/SwarmRobotics/Survivor.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
