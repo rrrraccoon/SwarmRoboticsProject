@@ -28,7 +28,7 @@ class Robot:
         self.max_velocity = speed
 
         #random initial velocity
-        self.velocity = [random.uniform(self.min_velocity, self.max_velocity), random.uniform(self.min_velocity, self.max_velocity)]
+        self.velocity = self.random_velocity()
 
 
         self.detection_radius = 50
@@ -88,7 +88,7 @@ class Robot:
     def display_robot(self, screen):
         pygame.draw.circle(screen, self.robot_colour, (self.position_x, self.position_y), self.RADIUS)
 
-    def update_random_velocity(self):
+    def random_velocity(self):
         self.velocity = [random.uniform(self.min_velocity, self.max_velocity), random.uniform(self.min_velocity, self.max_velocity)]
 
         return self.velocity
