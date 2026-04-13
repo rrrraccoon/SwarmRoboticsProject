@@ -98,10 +98,10 @@ class Robot:
     def update_velocity(self, global_best, iteration, total_iterations,
                                pso_evaluation, survivor_position, bias_x, bias_y):
 
-        # check if robot is oscillating in place
+        #check if robot is oscillating in place
         if self.last_position is not None:
             dist_moved = pso_evaluation(self.position, self.last_position)
-            if dist_moved < 2:
+            if dist_moved < 3:
                 self.stagnation_counter += 1
             else:
                 self.stagnation_counter = 0
@@ -111,10 +111,7 @@ class Robot:
         # force random repositioning if stuck too long
         if self.stagnation_counter >= self.STAGNATION_LIMIT:
             self.stagnation_counter = 0
-            self.velocity = [
-                random.uniform(self.min_velocity, self.max_velocity),
-                random.uniform(self.min_velocity, self.max_velocity)
-            ]
+            self.velocity = self.random_velocity()
             # reset personal best so it doesnt get pulled back to stuck area
             self.personal_best = self.position.copy()
             return self.velocity
@@ -143,11 +140,11 @@ class Robot:
                 cognitive = c1 * d1 * (self.personal_best[i] - self.position[i])
 
                 if pso_evaluation(self.position, survivor_position) > 90:
-                    social = 0.00001
+                    social = 0
                 else:
                     social = c2 * d2 * (global_best[i] - self.position[i])
 
-                # add exploration bias for current area
+                #add exploration bias for current area
                 bias = bias_strength * ([bias_x, bias_y][i])
 
                 v = inertia_weight * self.velocity[i] + cognitive + social + 0.3 * noise + bias
