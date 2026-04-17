@@ -4,7 +4,6 @@ class Transport:
     # safe zone centre target for robots to move toward
     SAFE_ZONE_X = 270
     SAFE_ZONE_Y = 310
-    #SAFE_ZONE_RECT = pygame.Rect(220, 20, 100, 600)
 
     def __init__(self):
         # grid cell, same size as used for pso exploration
@@ -32,9 +31,8 @@ class Transport:
     #for drawing pheromones
     def draw(self, screen):
         for (cx, cy), strength in self.pheromones.items():
-            alpha = min(180, int(strength * 40))
             x = cx * self.cell_size
             y = cy * self.cell_size
             s = pygame.Surface((self.cell_size, self.cell_size), pygame.SRCALPHA)
-            s.fill((255, 140, 0, alpha))
+            s.fill((255, 140, 0, min(180, int(strength * 40))))
             screen.blit(s, (x, y))
