@@ -9,64 +9,109 @@ SAFE_ZONE_Y = 310
 SAFE_ZONE_RECT = pygame.Rect(220, 20, 100, 600)
 
 
-def aco_transport(robot, survivor, pheromone_map):
-    rx, ry = robot.get_position()
+def aco_transport(robot, survivor, pheromone_map, obstacles_made):
+    rx = robot.get_position_x()
+    ry = robot.get_position_y()
 
+    alpha = 1.0
+    beta = 4.0
+
+    probabilities = []
+    candidates = []
+
+    #if reached safe zone
     if SAFE_ZONE_RECT.collidepoint(rx, ry):
         return True
 
-    step_size = 1.0
-    candidates = []
+    cell_size = pheromone_map.cell_size
+    #get current cell
+    current_cell_x = int(rx // cell_size)
+    current_cell_y = int(ry // cell_size)
 
-    #check possible positions all around robot
-    for angle in range(0, 360, 20):
-        #diff angled possible positions around robot
-        rad = math.radians(angle)
-        nx = rx + math.cos(rad) * step_size
-        ny = ry + math.sin(rad) * step_size
+    for dx in [-1, 0, 1]:
+        for dy in [-1, 0, 1]:
+            if dx == 0 and dy == 0:
+                continue
 
-        #continue if in bounds
-        if not (robot.ENVIRONMENT_X_MIN + robot.RADIUS <= nx <= robot.ENVIRONMENT_X_MAX - robot.RADIUS):
-            continue
-        if not (robot.ENVIRONMENT_Y_MIN + robot.RADIUS <= ny <= robot.ENVIRONMENT_Y_MAX - robot.RADIUS):
-            continue
+            #get neighbouring cell
+            next_cell_x = current_cell_x + dx
+            next_cell_y = current_cell_y + dy
 
-        candidates.append((nx, ny))
+            x_position = (next_cell_x + 0.5) * cell_size
+            y_position = (next_cell_y + 0.5) * cell_size
 
+            #skips adding a candidate if its out of bounds (couldskip candidates that go in obstacles too later)
+            if not (robot.ENVIRONMENT_X_MIN + robot.RADIUS <= x_position <= robot.ENVIRONMENT_X_MAX - robot.RADIUS):
+                continue
+            if not (robot.ENVIRONMENT_Y_MIN + robot.RADIUS <= y_position <= robot.ENVIRONMENT_Y_MAX - robot.RADIUS):
+                continue
+
+            #euclidean distance to safe zone
+            distance_to_safezone = math.sqrt((x_position - SAFE_ZONE_X) ** 2 + (y_position - SAFE_ZONE_Y) ** 2)
+
+            distance_before = math.sqrt((rx - SAFE_ZONE_X) ** 2 + (ry - SAFE_ZONE_Y) ** 2)
+            distance_after = math.sqrt((x_position - SAFE_ZONE_X) ** 2 + (y_position - SAFE_ZONE_Y) ** 2)
+
+            #if positive change in distance, better
+            d = distance_before - distance_after
+            if d > 0:
+                #+1 for better heuristic
+                improvement = (1 + d) ** beta
+            else:
+                #if going away from safe zone
+                improvement = 0.01
+
+            #pheromone
+            pheromone = pheromone_map.get(x_position, y_position) ** alpha
+            p = improvement * pheromone
+
+            #better if going left to safe zone
+            if x_position < rx:
+                p *= 2.0
+            else:
+                p *= 0.3
+
+            candidates.append((x_position, y_position))
+            probabilities.append(p)
+
+    #if theres no valid candidates
     if not candidates:
         return False
 
-    scores = []
 
-    for nx, ny in candidates:
-        #improves moving left toward safe zone
-        improvement = rx - nx
+    #make sum of probabilities = 1 (done implicitly in random.choices with weights) then choose the next position
+    #[0] to get the single value from the list returned by it
+    next_position = random.choices(range(len(candidates)), weights=probabilities, k=1)[0]
+    x_position, y_position = candidates[next_position]
 
-        pheromone = pheromone_map.get(nx, ny)
+    #to avoid robot moving too fast/teleporting
+    move_speed = 0.2
 
-        score = (1.0 + 3.0 * max(improvement, 0)) * (1.0 + 0.2 * pheromone)
+    new_x = rx + (x_position - rx) * move_speed
+    new_y = ry + (y_position - ry) * move_speed
 
-        if improvement < 0:
-            score *= 0.1  #if moving away
+    robot.set_position_x(new_x)
+    robot.set_position_y(new_y)
 
-        scores.append(score)
+    #keep survivor next to robot
+    survivor.set_position_x(new_x - 10)
+    survivor.set_position_y(new_y - 10)
 
-    chosen_idx = random.choices(range(len(candidates)), weights=scores, k=1)[0]
-    nx, ny = candidates[chosen_idx]
+    distance_before = math.sqrt((rx - SAFE_ZONE_X) ** 2 + (ry - SAFE_ZONE_Y) ** 2)
+    distance_after = math.sqrt((x_position - SAFE_ZONE_X) ** 2 + (y_position - SAFE_ZONE_Y) ** 2)
 
-    robot.set_position_x(nx)
-    robot.set_position_y(ny)
+    #put down pheromone (more if closer to safe zone)
+    if (distance_after < distance_before):
+        deposit_amount = 0.5
+    else:
+        deposit_amount = 0.05
 
-    pheromone_map.deposit(nx, ny, 0.1)
-
-    # keep survivor attached to robot
-    survivor.set_position_x(nx-10)
-    survivor.set_position_y(ny-10)
+    pheromone_map.deposit(x_position, y_position, deposit_amount)
 
     return False
 
 
-def transport_subswarm(transport_queue, pheromone_map, swarm, survivors, updatePSOSwarm):
+def transport_subswarm(transport_queue, pheromone_map, swarm, survivors, updatePSOSwarm, obstacles_made):
     finished = []
     active = list(transport_queue)
     clock = pygame.time.Clock()
@@ -78,7 +123,7 @@ def transport_subswarm(transport_queue, pheromone_map, swarm, survivors, updateP
 
         for robot in active[:]:
             survivor = robot.get_assigned_survivor()
-            reached = aco_transport(robot, survivor, pheromone_map)
+            reached = aco_transport(robot, survivor, pheromone_map, obstacles_made)
 
             if reached:
                 print("Robot delivered survivor to safe zone")
