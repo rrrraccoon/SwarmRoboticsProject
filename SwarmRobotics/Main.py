@@ -10,6 +10,7 @@ import pygame_gui
 
 from Robot import Robot
 from Survivor import Survivor
+from Obstacles import Obstacles
 
 #setup pygame modules
 pygame.init()
@@ -182,6 +183,7 @@ def main():
     previous_behaviour = ''
     #use the global variable within main method
     global obstacles_made
+    global obstacles
 
     #main loop to run pygame display until the program is quit
     running = True
@@ -311,16 +313,22 @@ def main():
 
                             obstacles_button.set_text('Obstacles: ON')
                             obstacles_made = True
+                            obstacles = Obstacles(1)
+                            obstacles.display_obstacles(screen)
 
                             #update the text
                             MANAGER.update(0)
                             MANAGER.draw_ui(screen)
                             pygame.display.update()
 
-                            drawObstacles()
+
                     else:
                         obstacles_button.set_text('Obstacles: OFF')
+                        obstacles.remove_obstacles(screen)
                         obstacles_made = False
+                        MANAGER.update(0)
+                        MANAGER.draw_ui(screen)
+                        pygame.display.update()
 
             #pass current event into manager to process (if not quitting)
             MANAGER.process_events(event)
@@ -342,25 +350,13 @@ def drawSafeZone():
     safe_zone_text = font.render('SAFE\nZONE', True, (0, 0, 0))
     screen.blit(safe_zone_text, (245, 300))
 
-def drawObstacles():
-    #store obstacles into a list
-    obstacles = []
-
-    obstacles = [pygame.Rect(600, 150, 30, 30),
-                 pygame.Rect(400, 300, 30, 30),
-                 pygame.Rect(550, 500, 30, 30),
-                 pygame.Rect(800, 250, 30, 30)]
-
-    for o in obstacles:
-        pygame.draw.rect(screen, (0,0,0), o)
-
 def display_swarm(swarm, survivor):
     #reset environment by overlaying it
     screen.fill((255, 255, 255), (220, 20, 660, 600))
     drawSafeZone()
 
     if obstacles_made:
-        drawObstacles()
+        obstacles.display_obstacles(screen)
 
     #create robot objects in swarm population
     for r in swarm:
@@ -393,7 +389,7 @@ def updateSwarm(swarm, survivor):
     drawSafeZone()
 
     if obstacles_made:
-        drawObstacles()
+        obstacles.display_obstacles(screen)
 
     for r in swarm:
         r.display_robot(screen)
@@ -407,7 +403,7 @@ def updateDispersedSwarm(swarm, original_swarm, survivor):
     screen.fill((255, 255, 255), (220, 20, 660, 600))
     drawSafeZone()
     if obstacles_made:
-        drawObstacles()
+        obstacles.display_obstacles(screen)
 
     for r in original_swarm:
         r.display_robot(screen)
@@ -425,7 +421,7 @@ def updatePSOSwarm(swarm, survivor, subswarm, pheromone_map):
     drawSafeZone()
 
     if obstacles_made:
-        drawObstacles()
+        obstacles.display_obstacles(screen)
 
     for r in swarm:
         r.display_pso_robot(screen)
