@@ -139,6 +139,7 @@ class Robot:
 
                 cognitive = c1 * d1 * (self.personal_best[i] - self.position[i])
 
+                #more exploration if not in range of survivor
                 if pso_evaluation(self.position, survivor_position) > 90:
                     social = 0
                 else:
@@ -191,11 +192,14 @@ class Robot:
         # mark current cell as explored
         explored.add((cell_x, cell_y))
 
-        # nudge away from explored neighbours
+        #nudge away from explored neighbours
         bias_x, bias_y = 0, 0
+        #the neighbour areas in the x and y axis
         for dx in [-1, 0, 1]:
             for dy in [-1, 0, 1]:
+                #get the current neighbour area
                 neighbour = (cell_x + dx, cell_y + dy)
+                #if it has been explored, there will be a slight push to go opposite that direction
                 if neighbour in explored:
                     bias_x -= dx
                     bias_y -= dy
@@ -203,6 +207,7 @@ class Robot:
         return bias_x, bias_y
 
     def display_pso_robot(self, screen):
+        #show the yellow detection radius
         if self.show_detection:
             d = self.detection_radius
             detection_surface = pygame.Surface((d * 2, d * 2), pygame.SRCALPHA)
