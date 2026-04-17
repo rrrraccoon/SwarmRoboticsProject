@@ -250,7 +250,7 @@ def main():
                             MANAGER.draw_ui(screen)
                             pygame.display.update()
 
-                            dispersion.disperse_positions(swarm, updateDispersedSwarm, survivor, screen)
+                            dispersion.disperse_positions(swarm, updateDispersedSwarm, survivor, obstacles_made)
                             previous_behaviour = 'disperse'
                             #after dispersion is done, resets to being off
                             disperse_button.set_text('Dispersion: OFF')
@@ -269,7 +269,7 @@ def main():
                             pygame.display.update()
 
                             #pso_search(swarm, survivor)
-                            exploration.pso_search(swarm, survivor, updatePSOSwarm, subswarm, pheromone_map)
+                            exploration.pso_search(swarm, survivor, updatePSOSwarm, subswarm, pheromone_map, obstacles_made)
 
                             previous_behaviour = 'explore'
                             #resets to being off
@@ -293,7 +293,8 @@ def main():
                                 transportation.transport_subswarm(
                                     subswarm, pheromone_map,
                                     swarm, survivor,
-                                    updatePSOSwarm
+                                    updatePSOSwarm,
+                                    obstacles_made
                                 )
 
                                 previous_behaviour = 'transport'
