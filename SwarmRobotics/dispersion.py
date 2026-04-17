@@ -4,7 +4,7 @@ import pygame
 import copy
 
 
-def disperse_positions(swarm, updateDispersedSwarm, survivor, screen):
+def disperse_positions(swarm, updateDispersedSwarm, survivor, obstacles_made):
     #learning_rate = 60
 
     max_iterations = 1000
