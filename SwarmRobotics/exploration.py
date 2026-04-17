@@ -2,7 +2,7 @@ import pygame
 import math
 import random
 
-def pso_search(swarm, survivors, updatePSOSwarm, subswarm, pheromone_map):
+def pso_search(swarm, survivors, updatePSOSwarm, subswarm, pheromone_map, obstacles_made):
 
     #max iterations
     maxsteps = 500
