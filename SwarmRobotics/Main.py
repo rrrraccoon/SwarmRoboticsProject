@@ -27,12 +27,18 @@ screen = pygame.display.set_mode((screen_width, screen_height))
 #if obstacles need to be dealt with
 obstacles_made = False
 
+# make screen bg grey
+interface_colour = pygame.Color(60, 61, 67)
+
+#create font object for text
+font = pygame.font.Font('fonts/FiraCode-Regular.ttf', 15)
+
 def main():
 
     pygame.display.set_caption('Swarm Robotics: Search and Rescue Simulation')
 
     # make screen bg grey
-    interface_colour = pygame.Color(60, 61, 67)
+    #interface_colour = pygame.Color(60, 61, 67)
     screen.fill(interface_colour)
 
     screen.fill(interface_colour, (0, 0, 220, screen.get_height()))
@@ -40,15 +46,10 @@ def main():
     #create a white rect which will be the environment for the swarm
     screen.fill((255,255,255), (220, 20, 660, 600))
 
-    #create font object for text
-    font = pygame.font.Font('fonts/FiraCode-Regular.ttf', 15)
 
     #display text
     behaviour_text = font.render('BEHAVIOURS:', True, (255,255,255))
     screen.blit(behaviour_text, (20,20))
-
-    #dispersion_text = font.render('Dispersion:', True, (255, 255, 255))
-    #screen.blit(dispersion_text, (30, 80))
 
     size_text = font.render('Swarm Size:', True, (255, 255, 255))
     screen.blit(size_text, (30, 180))
@@ -65,17 +66,12 @@ def main():
     screen.blit(min_label, (20, 235))  #under left end of slider
     screen.blit(max_label, (180, 235))  #under right end of slider
 
-    #button next to dispersion
-    #screen.fill((255, 255, 255), (140, 84, 14, 14))
-
-    #button next to exploration
-    #screen.fill((255, 255, 255), (140, 104, 14, 14))
-
     # button for displaying swarm
-    screen.fill((217, 217, 217), (15, 570, 185, 40))
-    #display swarm text
-    display_swarm_text = font.render('Display/Reset Swarm', True, (0, 0, 0))
-    screen.blit(display_swarm_text, (20, 580))
+    display_button = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect((15, 570, 185, 40)),
+        text='Display/Reset Swarm',
+        manager=MANAGER
+    )
 
     #input box next to swarm size
     text_input = pygame_gui.elements.UITextEntryLine(
@@ -120,47 +116,14 @@ def main():
         manager=MANAGER
     )
 
-    #toggle static obstacles button
-    obstacles_button = pygame_gui.elements.UIButton(
+    #obstacle choices dropdown
+    obstacles_dropdown = pygame_gui.elements.UIDropDownMenu(
+        options_list=['No Obstacles', 'Obstacles 1', 'Obstacles 2'],
+        starting_option='No Obstacles',
         relative_rect=pygame.Rect((25, 290), (165, 30)),
-        text='Obstacles: OFF',
         manager=MANAGER
     )
-
-    #grey box behind key section
-    screen.fill((117, 117, 117), (10, 330, 200, 220))
-
-
-    #key for behaviour states/robot/survivor colours
-    key_text = font.render('KEY\n'
-                           'Survivor:\n\n'
-                           'Dispersing:\n'
-                           'Pre-dispersion\npositions:\n\n'
-                           'Exploring:\n'
-                           'Survivor Found:\n\n'
-                           'Transporting:\n',
-                           True, (255, 255, 255))
-    screen.blit(key_text, (20, 330))
-
-    #coloured circles in key
-    #survivor
-    pygame.draw.circle(screen, pygame.Color(0, 0, 255),
-                       (115, 360), 6)
-    #dispersing
-    pygame.draw.circle(screen, pygame.Color(252, 137, 5),
-                       (130, 400), 6)
-    #pre-dispersion positions
-    pygame.draw.circle(screen, pygame.Color(208, 222, 224),
-                       (120, 440), 6)
-    #exploring
-    pygame.draw.circle(screen, pygame.Color(255, 0, 0),
-                       (120, 480), 6)
-    #survivor found
-    pygame.draw.circle(screen, pygame.Color(134, 2, 250),
-                       (165, 500), 6)
-    #transportation
-    pygame.draw.circle(screen, pygame.Color(0, 255, 0),
-                       (150, 540), 6)
+    draw_key()
 
     # safe zone left side of environment
     SAFE_ZONE = pygame.Rect(220, 20, 100, 600)
@@ -192,10 +155,12 @@ def main():
         UI_REFRESH_RATE = CLOCK.tick(60)/1000
 
         for event in pygame.event.get():
+            # pass current event into manager to process
+            MANAGER.process_events(event)
+
             #if the program is quit
             if event.type == pygame.QUIT:
                 running = False
-
 
             if event.type == pygame_gui.UI_HORIZONTAL_SLIDER_MOVED:
                 if event.ui_element == swarm_slider:
@@ -227,20 +192,17 @@ def main():
                         #print("invalid value")
                         pass
 
-            #chek if user clicks on display swarm
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                mouse = pygame.mouse.get_pos()
-                #check if its clicked within the area of the button
-                if 15 <= mouse[0] <= 200 and 570 <= mouse[1] <= 610:
+            if event.type == pygame_gui.UI_BUTTON_PRESSED:
+                #check if user clicks on display swarm
+                if event.ui_element == display_button:
                     swarm, subswarm = create_swarm(size)
                     survivor = createSurvivors(survivor_count)
                     display_swarm(swarm, survivor, obstacles)
                     pheromone_map = Transport()
 
-                    #prev stored behaviour resets
+                    # prev stored behaviour resets
                     previous_behaviour = ''
 
-            if event.type == pygame_gui.UI_BUTTON_PRESSED:
                 if event.ui_element == disperse_button:
                     if disperse_button.text == 'Dispersion: OFF':
 
@@ -260,7 +222,6 @@ def main():
                         disperse_button.set_text('Dispersion: OFF')
 
                 if event.ui_element == exploration_button:
-                    #print('clicked')
                     if exploration_button.text == 'Exploration: OFF':
 
                         if swarm is not None and len(swarm) > 0 and previous_behaviour != 'explore':
@@ -311,35 +272,36 @@ def main():
                     else:
                         transportation_button.set_text('Transportation: OFF')
 
-                if event.ui_element == obstacles_button:
-                    #print('clicked')
-                    if obstacles_button.text == 'Obstacles: OFF':
-                        if previous_behaviour == '':
-
-                            obstacles_button.set_text('Obstacles: ON')
-                            obstacles_made = True
-                            obstacles = Obstacles(1)
-                            obstacles.display_obstacles(screen)
-
-                            #update the text
-                            MANAGER.update(0)
-                            MANAGER.draw_ui(screen)
-                            pygame.display.update()
-
-
-                    else:
-                        obstacles_button.set_text('Obstacles: OFF')
+            if event.type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED:
+                if event.ui_element == obstacles_dropdown:
+                    selected = event.text
+                    #remove any obstacles (would also apply to No Obstacles option)
+                    if obstacles_made:
                         obstacles.remove_obstacles(screen)
                         obstacles_made = False
-                        MANAGER.update(0)
-                        MANAGER.draw_ui(screen)
-                        pygame.display.update()
 
-            #pass current event into manager to process (if not quitting)
-            MANAGER.process_events(event)
+                    if event.text == 'Obstacles 1':
+                        obstacles_made = True
+                        #pass in as option 1
+                        obstacles = Obstacles(1)
+                        obstacles.display_obstacles(screen)
+
+                    elif event.text == 'Obstacles 2':
+                        obstacles_made = True
+                        #pass in as option 2
+                        obstacles = Obstacles(2)
+                        obstacles.display_obstacles(screen)
+
+
+
+                    #update
+                    #MANAGER.update(0)
+                    #MANAGER.draw_ui(screen)
+                    #pygame.display.update()
 
         #update manager, to update every ui element in manager
         MANAGER.update(UI_REFRESH_RATE)
+        draw_key()
 
         MANAGER.draw_ui(screen)
 
@@ -347,6 +309,44 @@ def main():
         pygame.display.update()
 
     pygame.quit()
+
+def draw_key():
+    #fill background section
+    screen.fill(interface_colour, (0, 290, 220, 220))
+
+    # grey box behind key section
+    screen.fill((117, 117, 117), (10, 330, 200, 220))
+
+    # key for behaviour states/robot/survivor colours
+    key_text = font.render('KEY\n'
+                           'Survivor:\n\n'
+                           'Dispersing:\n'
+                           'Pre-dispersion\npositions:\n\n'
+                           'Exploring:\n'
+                           'Survivor Found:\n\n'
+                           'Transporting:\n',
+                           True, (255, 255, 255))
+    screen.blit(key_text, (20, 330))
+
+    # coloured circles in key
+    # survivor
+    pygame.draw.circle(screen, pygame.Color(0, 0, 255),
+                       (115, 360), 6)
+    # dispersing
+    pygame.draw.circle(screen, pygame.Color(252, 137, 5),
+                       (130, 400), 6)
+    # pre-dispersion positions
+    pygame.draw.circle(screen, pygame.Color(208, 222, 224),
+                       (120, 440), 6)
+    # exploring
+    pygame.draw.circle(screen, pygame.Color(255, 0, 0),
+                       (120, 480), 6)
+    # survivor found
+    pygame.draw.circle(screen, pygame.Color(134, 2, 250),
+                       (165, 500), 6)
+    # transportation
+    pygame.draw.circle(screen, pygame.Color(0, 255, 0),
+                       (150, 540), 6)
 
 def drawSafeZone():
     font = pygame.font.Font('fonts/FiraCode-Regular.ttf', 15)
