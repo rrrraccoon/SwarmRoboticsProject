@@ -43,21 +43,11 @@ def aco_transport(robot, survivor, pheromone_map, obstacles):
             x_position = (next_cell_x + 0.5) * cell_size
             y_position = (next_cell_y + 0.5) * cell_size
 
-            #skips adding a candidate if its out of bounds (couldskip candidates that go in obstacles too later)
+            #skips adding a candidate if its out of bounds of environment
             if not (robot.ENVIRONMENT_X_MIN + robot.RADIUS <= x_position <= robot.ENVIRONMENT_X_MAX - robot.RADIUS):
                 continue
             if not (robot.ENVIRONMENT_Y_MIN + robot.RADIUS <= y_position <= robot.ENVIRONMENT_Y_MAX - robot.RADIUS):
                 continue
-            if obstacles:
-                if obstacles.collision_points(x_position, y_position):
-                    print("point skipped")
-                    continue
-
-                new_x = rx + (x_position - rx) * move_speed
-                new_y = ry + (y_position - ry) * move_speed
-                if obstacles.collision_robot(new_x, new_y, 10):
-                    print("point skipped")
-                    continue
 
             #euclidean distance to safe zone
             distance_to_safezone = math.sqrt((x_position - SAFE_ZONE_X) ** 2 + (y_position - SAFE_ZONE_Y) ** 2)
@@ -76,30 +66,35 @@ def aco_transport(robot, survivor, pheromone_map, obstacles):
 
             #pheromone
             pheromone = pheromone_map.get(x_position, y_position) ** alpha
+
+            if obstacles.collision_robot(x_position, y_position, 15):
+                pheromone *= 0.5
+
             p = improvement * pheromone
 
-            #better if going left to safe zone
-            if x_position < rx:
-                p *= 2.0
-            else:
-                p *= 0.3
+            if obstacles.collision_robot(x_position, y_position, 10):
+                p *= 0.2
 
             candidates.append((x_position, y_position))
             probabilities.append(p)
 
     #if theres no valid candidates
     if not candidates:
+        print("no candidates")
         return False
-
 
     #make sum of probabilities = 1 (done implicitly in random.choices with weights) then choose the next position
     #[0] to get the single value from the list returned by it
     next_position = random.choices(range(len(candidates)), weights=probabilities, k=1)[0]
     x_position, y_position = candidates[next_position]
 
-
     new_x = rx + (x_position - rx) * move_speed
     new_y = ry + (y_position - ry) * move_speed
+
+    #if the new positions still collide
+    if obstacles.collision_robot(new_x, new_y, robot.RADIUS):
+        print("new position collides")
+        return False
 
     robot.set_position_x(new_x)
     robot.set_position_y(new_y)
