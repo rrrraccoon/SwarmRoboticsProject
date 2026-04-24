@@ -214,7 +214,7 @@ def main():
                             MANAGER.draw_ui(screen)
                             pygame.display.update()
 
-                            dispersion.disperse_positions(swarm, updateDispersedSwarm, survivor, obstacles_made)
+                            dispersion.disperse_positions(swarm, updateDispersedSwarm, survivor, obstacles)
                             previous_behaviour = 'disperse'
                             #after dispersion is done, resets to being off
                             disperse_button.set_text('Dispersion: OFF')
