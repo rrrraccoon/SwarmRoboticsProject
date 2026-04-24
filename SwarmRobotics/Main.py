@@ -183,7 +183,7 @@ def main():
     previous_behaviour = ''
     #use the global variable within main method
     global obstacles_made
-    global obstacles
+    obstacles = None
 
     #main loop to run pygame display until the program is quit
     running = True
@@ -234,7 +234,7 @@ def main():
                 if 15 <= mouse[0] <= 200 and 570 <= mouse[1] <= 610:
                     swarm, subswarm = create_swarm(size)
                     survivor = createSurvivors(survivor_count)
-                    display_swarm(swarm, survivor)
+                    display_swarm(swarm, survivor, obstacles)
                     pheromone_map = Transport()
 
                     #prev stored behaviour resets
@@ -271,7 +271,12 @@ def main():
                             pygame.display.update()
 
                             #pso_search(swarm, survivor)
-                            exploration.pso_search(swarm, survivor, updatePSOSwarm, subswarm, pheromone_map, obstacles_made)
+                            exploration.pso_search(swarm,
+                                                   survivor,
+                                                   updatePSOSwarm,
+                                                   subswarm,
+                                                   pheromone_map,
+                                                   obstacles)
 
                             previous_behaviour = 'explore'
                             #resets to being off
@@ -296,7 +301,7 @@ def main():
                                     subswarm, pheromone_map,
                                     swarm, survivor,
                                     updatePSOSwarm,
-                                    obstacles_made
+                                    obstacles
                                 )
 
                                 previous_behaviour = 'transport'
@@ -350,7 +355,7 @@ def drawSafeZone():
     safe_zone_text = font.render('SAFE\nZONE', True, (0, 0, 0))
     screen.blit(safe_zone_text, (245, 300))
 
-def display_swarm(swarm, survivor):
+def display_swarm(swarm, survivor, obstacles):
     #reset environment by overlaying it
     screen.fill((255, 255, 255), (220, 20, 660, 600))
     drawSafeZone()
@@ -383,7 +388,7 @@ def create_swarm(swarmSize):
 
     return swarm, subswarm
 
-def updateSwarm(swarm, survivor):
+def updateSwarm(swarm, survivor, obstacles):
     # reset environment by overlaying it
     screen.fill((255, 255, 255), (220, 20, 660, 600))
     drawSafeZone()
@@ -398,7 +403,7 @@ def updateSwarm(swarm, survivor):
     pygame.display.update()
 
 #to have the original swarm positions be displayed as well
-def updateDispersedSwarm(swarm, original_swarm, survivor):
+def updateDispersedSwarm(swarm, original_swarm, survivor, obstacles):
     # reset environment by overlaying it
     screen.fill((255, 255, 255), (220, 20, 660, 600))
     drawSafeZone()
@@ -415,7 +420,7 @@ def updateDispersedSwarm(swarm, original_swarm, survivor):
     pygame.display.update()
 
 #pso robots have their detection radius visible
-def updatePSOSwarm(swarm, survivor, subswarm, pheromone_map):
+def updatePSOSwarm(swarm, survivor, subswarm, pheromone_map, obstacles):
     # reset environment by overlaying it
     screen.fill((255, 255, 255), (220, 20, 660, 600))
     drawSafeZone()
