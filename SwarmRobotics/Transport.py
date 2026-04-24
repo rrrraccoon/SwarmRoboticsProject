@@ -9,7 +9,7 @@ class Transport:
         # grid cell, same size as used for pso exploration
         self.cell_size = 20 #changed from 40 to test
         self.pheromones = {}
-        self.evaporation_rate = 0.005
+        self.evaporation_rate = 0.07
         self.min_pheromone = 0.01
         self.max_pheromone = 5.0
 
