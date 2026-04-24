@@ -93,8 +93,17 @@ def aco_transport(robot, survivor, pheromone_map, obstacles):
 
     #if the new positions still collide
     if obstacles.collision_robot(new_x, new_y, robot.RADIUS):
+
+        #try a different random candidate instead
+        x_position, y_position = candidates[random.randrange(len(candidates))]
+        new_x = rx + (x_position - rx) * move_speed
+        new_y = ry + (y_position - ry) * move_speed
         print("new position collides")
-        return False
+
+        #if this still collides then reject it, in next iteration a diff random candidate may be checked
+        if obstacles.collision_robot(new_x, new_y, robot.RADIUS):
+            print("new candidate rejected")
+            return False
 
     robot.set_position_x(new_x)
     robot.set_position_y(new_y)
