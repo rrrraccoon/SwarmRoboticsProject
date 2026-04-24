@@ -4,8 +4,7 @@ import pygame
 import copy
 
 
-def disperse_positions(swarm, updateDispersedSwarm, survivor, obstacles_made):
-    #learning_rate = 60
+def disperse_positions(swarm, updateDispersedSwarm, survivor, obstacles):
 
     max_iterations = 1000
     disperse_colour = pygame.Color(252, 137, 5)
@@ -26,8 +25,6 @@ def disperse_positions(swarm, updateDispersedSwarm, survivor, obstacles_made):
         learning_rate = 75
     else:
         learning_rate = 60
-
-    #print(learning_rate)
 
     #indices of robots that have become anchors
         #may change to use list comprehension
@@ -77,47 +74,31 @@ def disperse_positions(swarm, updateDispersedSwarm, survivor, obstacles_made):
 
             #make a check if its currently past rss threshold
             #would then make it settled and go to next iteration
-            current_rss = calculateTotalRSS(x, y, others)
-            #print(current_rss)
+            current_rss = calculateTotalRSS(x, y, others, obstacles)
             if current_rss <= RSS_threshold:
                 settled.add(i)
                 continue
 
             #calculating new x position using x gradient
             #gradient using original rss
-            x_gradient = calculateGradientX(x, y, current_rss, others)
+            x_gradient = calculateGradientX(x, y, current_rss, others, obstacles)
             new_x = x - (learning_rate * x_gradient)
             #get the new rss using the new x position
-            x_new_rss = calculateTotalRSS(new_x, y, others)
+            x_new_rss = calculateTotalRSS(new_x, y, others, obstacles)
 
-            """
-            #if under threshold (under -> over 'max' distance)
-            if x_new_rss <= RSS_threshold:
-                print("reached threshold in x")
-                #break
-            """
 
             if not (r.ENVIRONMENT_X_MIN + r.RADIUS <= new_x <= r.ENVIRONMENT_X_MAX - r.RADIUS) or x_new_rss >= current_rss:
                 new_x = x  #reject move by reassigning original position
-                #print("reached threshold in x2")
-
-
 
             #y position (using updated x for gradient and rss)
-            y_rss = calculateTotalRSS(new_x, y, others)
-            y_gradient = calculateGradientY(new_x, y, y_rss, others)
+            y_rss = calculateTotalRSS(new_x, y, others, obstacles)
+            y_gradient = calculateGradientY(new_x, y, y_rss, others, obstacles)
             new_y = y - (learning_rate * y_gradient)
-            y_new_rss = calculateTotalRSS(new_x, new_y, others)
+            y_new_rss = calculateTotalRSS(new_x, new_y, others, obstacles)
 
-            """
-            if y_new_rss <= RSS_threshold:
-                print("reached threshold in y")
-                #break
-            """
 
             if not (r.ENVIRONMENT_Y_MIN + r.RADIUS <= new_y <= r.ENVIRONMENT_Y_MAX - r.RADIUS) or y_new_rss >= y_rss:
                 new_y = y  #reject move by reverting to original y
-                #print("reached threshold in y2")
 
             #update new positions into robot's index
             new_positions[i] = (new_x, new_y)
@@ -136,42 +117,33 @@ def disperse_positions(swarm, updateDispersedSwarm, survivor, obstacles_made):
             others = [other for j, other in enumerate(swarm) if j != i]
             if len(others) == 0:
                 continue
-            current_rss = calculateTotalRSS(r.get_position_x(), r.get_position_y(), others)
+            current_rss = calculateTotalRSS(r.get_position_x(), r.get_position_y(), others, obstacles)
             #make settled
             if current_rss <= RSS_threshold:
                 settled.add(i)
 
-
-        # Change settled robots to blue
-        #for i in settled:
-            #print('settled coloured')
-        #    swarm[i].set_colour(anchor_colour)
-            #updateSwarm(swarm, survivor)
-
-
-        updateDispersedSwarm(swarm, original_swarm, survivor)
+        updateDispersedSwarm(swarm, original_swarm, survivor, obstacles)
 
     #after dispersion, reset colour
     for r in swarm:
         r.set_colour(pygame.Color(255, 0, 0))
-    updateDispersedSwarm(swarm, original_swarm, survivor)
+    updateDispersedSwarm(swarm, original_swarm, survivor, obstacles)
 
 
-
-def calculateGradientX(x_position, y_position, current_RSS, anchors):
+def calculateGradientX(x_position, y_position, current_RSS, anchors, obstacles):
     step = 4
     next_position = x_position + step
 
-    RSS_next = calculateTotalRSS(next_position, y_position, anchors)
+    RSS_next = calculateTotalRSS(next_position, y_position, anchors, obstacles)
 
     gradient = (RSS_next - current_RSS)/(next_position - x_position)
     return gradient
 
-def calculateGradientY(x_position, y_position, current_RSS, anchors):
+def calculateGradientY(x_position, y_position, current_RSS, anchors, obstacles):
     step = 4
     next_position = y_position + step
 
-    RSS_next = calculateTotalRSS(x_position, next_position, anchors)
+    RSS_next = calculateTotalRSS(x_position, next_position, anchors, obstacles)
 
     gradient = (RSS_next - current_RSS)/(next_position - y_position)
     return gradient
@@ -190,9 +162,28 @@ def calculateRSS(x_position, y_position, anchor):
     return rss
 
 #passes values into calculateRSS for each anchor then adds
-def calculateTotalRSS(x_position, y_position, anchors):
+def calculateTotalRSS(x_position, y_position, anchors, obstacles):
     total = 0
     for a in anchors:
             total += calculateRSS(x_position, y_position, a)
 
+    if obstacles:
+        total += calculateTotalObstacleRSS(x_position, y_position, obstacles)
+
+    return total
+
+def calculateTotalObstacleRSS(x_position, y_position, obstacles):
+    total = 0
+    for obstacle in obstacles.get_obstacles():
+        #get the x and y bounds of the obstacle
+        closest_x = max(obstacle.left, min(x_position, obstacle.right))
+        closest_y = max(obstacle.top, min(y_position, obstacle.bottom))
+
+        #get distance from center of obstacle to robot
+        distance = math.sqrt((x_position - closest_x) ** 2 + (y_position - closest_y) ** 2)
+        epsilon = 1e-6
+        distance = max(distance, epsilon)
+
+        #adding this rss to total rss
+        total += 1/distance
     return total
