@@ -98,32 +98,14 @@ class Robot:
     def update_velocity(self, global_best, iteration, total_iterations,
                                pso_evaluation, survivor_position, bias_x, bias_y):
 
-        #check if robot is oscillating in place
-        if self.last_position is not None:
-            dist_moved = pso_evaluation(self.position, self.last_position)
-            if dist_moved < 3:
-                self.stagnation_counter += 1
-            else:
-                self.stagnation_counter = 0
-
-        self.last_position = self.position.copy()
-
-        # force random repositioning if stuck too long
-        if self.stagnation_counter >= self.STAGNATION_LIMIT:
-            self.stagnation_counter = 0
-            self.velocity = self.random_velocity()
-            # reset personal best so it doesnt get pulled back to stuck area
-            self.personal_best = self.position.copy()
-            return self.velocity
-
         self.new_velocity = []
-        c1 = 1.5
-        c2 = 0.8
+        c1 = 1.2
+        c2 = 0.5
         bias_strength = 2.0 + (iteration / total_iterations) * 3.0  #to increase/decrease exploration
 
         min_inertia = 0.4
         max_inertia = 0.9
-        noise = random.uniform(-2, 2)
+        noise = random.uniform(-0.2, 0.2)
         inertia_weight = (max_inertia - min_inertia) * (
             (total_iterations - iteration) / total_iterations) + min_inertia
 
@@ -141,15 +123,21 @@ class Robot:
 
                 #more exploration if not in range of survivor
                 if pso_evaluation(self.position, survivor_position) > 90:
-                    social = 0
+                    social = social = c2 * d2 * (global_best[i] - self.position[i]) * 0.6
                 else:
                     social = c2 * d2 * (global_best[i] - self.position[i])
 
                 #add exploration bias for current area
                 bias = bias_strength * ([bias_x, bias_y][i])
 
-                v = inertia_weight * self.velocity[i] + cognitive + social + 0.3 * noise + bias
+                v = inertia_weight * self.velocity[i] + cognitive + social + bias
+
+                #have a chance of adding noise
+                if random.random() < 0.1:
+                    v += noise
+
                 v = max(self.min_velocity, min(self.max_velocity, v))
+
                 self.new_velocity.append(v)
 
             self.velocity = self.new_velocity.copy()
