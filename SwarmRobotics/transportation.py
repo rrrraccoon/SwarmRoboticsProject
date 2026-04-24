@@ -9,7 +9,7 @@ SAFE_ZONE_Y = 310
 SAFE_ZONE_RECT = pygame.Rect(220, 20, 100, 600)
 
 
-def aco_transport(robot, survivor, pheromone_map, obstacles_made):
+def aco_transport(robot, survivor, pheromone_map, obstacles):
     rx = robot.get_position_x()
     ry = robot.get_position_y()
 
@@ -18,6 +18,9 @@ def aco_transport(robot, survivor, pheromone_map, obstacles_made):
 
     probabilities = []
     candidates = []
+
+    # to avoid robot moving too fast/teleporting
+    move_speed = 0.2
 
     #if reached safe zone
     if SAFE_ZONE_RECT.collidepoint(rx, ry):
@@ -45,6 +48,16 @@ def aco_transport(robot, survivor, pheromone_map, obstacles_made):
                 continue
             if not (robot.ENVIRONMENT_Y_MIN + robot.RADIUS <= y_position <= robot.ENVIRONMENT_Y_MAX - robot.RADIUS):
                 continue
+            if obstacles:
+                if obstacles.collision_points(x_position, y_position):
+                    print("point skipped")
+                    continue
+
+                new_x = rx + (x_position - rx) * move_speed
+                new_y = ry + (y_position - ry) * move_speed
+                if obstacles.collision_robot(new_x, new_y, 10):
+                    print("point skipped")
+                    continue
 
             #euclidean distance to safe zone
             distance_to_safezone = math.sqrt((x_position - SAFE_ZONE_X) ** 2 + (y_position - SAFE_ZONE_Y) ** 2)
@@ -84,8 +97,6 @@ def aco_transport(robot, survivor, pheromone_map, obstacles_made):
     next_position = random.choices(range(len(candidates)), weights=probabilities, k=1)[0]
     x_position, y_position = candidates[next_position]
 
-    #to avoid robot moving too fast/teleporting
-    move_speed = 0.2
 
     new_x = rx + (x_position - rx) * move_speed
     new_y = ry + (y_position - ry) * move_speed
@@ -111,7 +122,7 @@ def aco_transport(robot, survivor, pheromone_map, obstacles_made):
     return False
 
 
-def transport_subswarm(transport_queue, pheromone_map, swarm, survivors, updatePSOSwarm, obstacles_made):
+def transport_subswarm(transport_queue, pheromone_map, swarm, survivors, updatePSOSwarm, obstacles):
     finished = []
     active = list(transport_queue)
     clock = pygame.time.Clock()
@@ -123,7 +134,7 @@ def transport_subswarm(transport_queue, pheromone_map, swarm, survivors, updateP
 
         for robot in active[:]:
             survivor = robot.get_assigned_survivor()
-            reached = aco_transport(robot, survivor, pheromone_map, obstacles_made)
+            reached = aco_transport(robot, survivor, pheromone_map, obstacles)
 
             if reached:
                 print("Robot delivered survivor to safe zone")
@@ -142,7 +153,7 @@ def transport_subswarm(transport_queue, pheromone_map, swarm, survivors, updateP
                 active.remove(robot)
 
 
-        updatePSOSwarm(swarm, survivors, active, pheromone_map)
+        updatePSOSwarm(swarm, survivors, active, pheromone_map, obstacles)
         pheromone_map.evaporate()
 
         pygame.display.update()
