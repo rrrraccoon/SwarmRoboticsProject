@@ -2,10 +2,10 @@ import pygame
 import math
 import random
 
-def pso_search(swarm, survivors, updatePSOSwarm, subswarm, pheromone_map, obstacles_made):
+def pso_search(swarm, survivors, updatePSOSwarm, subswarm, pheromone_map, obstacles):
 
     #max iterations
-    maxsteps = 500
+    maxsteps = 1000
     step = 0
     #robots detection radius
     detection_radius = 50
@@ -36,7 +36,7 @@ def pso_search(swarm, survivors, updatePSOSwarm, subswarm, pheromone_map, obstac
             robots_in_range = [
                 r for r in swarm
                 if r.get_assigned_survivor() is None
-                and pso_evaluation(r.get_position(), s.get_position()) < detection_radius
+                and pso_evaluation(r.get_position(), s.get_position()) <= detection_radius
             ]
 
             #if there have been robots found within range of it choose a random one to assign to i
@@ -78,7 +78,7 @@ def pso_search(swarm, survivors, updatePSOSwarm, subswarm, pheromone_map, obstac
                     #temporarily remove the robot from the main swarm
                     swarm.remove(r)
 
-                updatePSOSwarm(swarm, survivors, subswarm, pheromone_map)
+                updatePSOSwarm(swarm, survivors, subswarm, pheromone_map, obstacles)
                 continue
 
             #unassigned robots continue PSO exploration
@@ -104,8 +104,26 @@ def pso_search(swarm, survivors, updatePSOSwarm, subswarm, pheromone_map, obstac
                 bias_x, bias_y
             )
 
+            old_position = r.position.copy()
             #update position
             position = r.update_position()
+
+            #revert if new position collides with an obstacle
+            if obstacles:
+
+                if obstacles.collision_robot(position[0], position[1], r.RADIUS+1):
+                    #go back to old position
+                    r.position = old_position
+
+                    #reverse velocity if it collides with object
+                    r.velocity[0] *= -1
+                    r.velocity[1] *= -1
+
+                    r.update_position()
+                    print("obstacle avoided")
+
+                    continue
+
 
             #update personal best against all unfound survivors
             for s in unfound():
@@ -117,7 +135,7 @@ def pso_search(swarm, survivors, updatePSOSwarm, subswarm, pheromone_map, obstac
                             global_best, s.get_position()):
                         global_best = r.personal_best.copy()
 
-            updatePSOSwarm(swarm, survivors, subswarm, pheromone_map)
+            updatePSOSwarm(swarm, survivors, subswarm, pheromone_map, obstacles)
 
         step += 1
 
@@ -128,4 +146,10 @@ def pso_search(swarm, survivors, updatePSOSwarm, subswarm, pheromone_map, obstac
 def pso_evaluation(position, survivor_position):
     x = position[0] - survivor_position[0]
     y = position[1] - survivor_position[1]
-    return math.sqrt((x ** 2) + (y ** 2))
+    dist = math.sqrt((x ** 2) + (y ** 2))
+
+    #if an obstacle is in the way  to the survivor
+    #if obstacles:
+    #    if
+
+    return dist
