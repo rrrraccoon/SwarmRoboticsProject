@@ -149,6 +149,7 @@ def main():
 
     transporting = False
     exploring = False
+    obstacles = None
 
     #main loop to run pygame display until the program is quit
     running = True
@@ -208,7 +209,7 @@ def main():
                 if event.ui_element == disperse_button:
                     if disperse_button.text == 'Dispersion: OFF':
 
-                        if swarm is not None and len(swarm) > 0 and previous_behaviour != 'disperse':
+                        if swarm is not None and len(swarm) > 0:
                             disperse_button.set_text('Dispersion: ON')
 
                             #update the text in the dispersion button before dispersion begins
@@ -243,16 +244,18 @@ def main():
 
                 if event.ui_element == transportation_button:
                     if transportation_button.text == 'Transportation: OFF' and transporting == False:
-                        if subswarm:
+                        #can toggle during exploration
+                        #and if exploration is paused but theres a subswarm, can still toggle
+                        if exploring or subswarm:
                             transportation_button.set_text('Transportation: ON')
                             MANAGER.update(0)
                             MANAGER.draw_ui(screen)
                             pygame.display.update()
 
-                            transportation = TransportationACO(subswarm, survivor, obstacles)
+                            transportation = TransportationACO()
                             transporting = True
                         else:
-                            print("No robots ready for transportation!")
+                            print("Exploration first!")
                     else:
                         #test this result just in case
                         transporting = False
@@ -294,9 +297,9 @@ def main():
 
         if transporting and subswarm is not None:
             transport_done = transportation.transport_subswarm(subswarm, pheromone_map,swarm, survivor, updatePSOSwarm, obstacles)
-            if transport_done:
+            if transport_done and not exploring:
                 transporting = False
-                exploration_button.set_text('Transportation: OFF')
+                transportation_button.set_text('Transportation: OFF')
 
         #update manager, to update every ui element in manager
         MANAGER.update(UI_REFRESH_RATE)
