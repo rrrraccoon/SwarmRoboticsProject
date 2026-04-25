@@ -27,16 +27,16 @@ class ExplorationPSO:
             return True
 
         # return only unfound survivors each time this is called
-        def unfound():
-            return [s for s in survivors if not s.found]
+        #def unfound():
+        unfound = [s for s in survivors if not s.found]
 
-        if self.step >= self.MAX_STEPS or len(unfound()) == 0:
+        if self.step >= self.MAX_STEPS or len(unfound) == 0:
             print('All survivors found!')
             self.done = True
             return True
 
         # for each unfound survivor, check if any robots are in range of it
-        for s in unfound():
+        for s in unfound:
             # check if the survivor doesnt already have a robot that is assigned (found) to it
             if s.assigned_robot is not None:
                 continue
@@ -87,12 +87,18 @@ class ExplorationPSO:
                     # temporarily remove the robot from the main swarm
                     swarm.remove(r)
 
-                updatePSOSwarm(swarm, survivors, subswarm, pheromone_map, obstacles)
+                    unfound = [s for s in survivors if not s.found]
+
+                #updatePSOSwarm(swarm, survivors, subswarm, pheromone_map, obstacles)
                 continue
+
+            #if no survivors left
+            if not unfound:
+                break
 
             #if unassigned continue PSO exploration
             #for every unfound survivor, check and update gb/pb
-            for s in unfound():
+            for s in unfound:
                 # update gb
                 if self.pso_evaluation(r.personal_best, s.get_position()) < self.pso_evaluation(
                         self.global_best, s.get_position()):
@@ -101,18 +107,13 @@ class ExplorationPSO:
             # get the currently explored area to deter away from it
             bias_x, bias_y = r.get_exploration_bias(self.explored, self.cell_size)
 
-            # break loop if all survivors found
-            remaining = unfound()
-            if not remaining:
-                break
-
             # update current robots velocity
             r.update_velocity(
                 self.global_best,
                 self.step,
                 self.MAX_STEPS,
                 self.pso_evaluation,
-                min(remaining, key=lambda s: self.pso_evaluation(
+                min(unfound, key=lambda s: self.pso_evaluation(
                     r.get_position(), s.get_position())).get_position(),
                 bias_x, bias_y
             )
@@ -134,7 +135,8 @@ class ExplorationPSO:
                     continue
 
             # update personal best against all unfound survivors
-            for s in unfound():
+            for s in unfound:
+
                 if self.pso_evaluation(position, s.get_position()) < self.pso_evaluation(
                         r.personal_best, s.get_position()):
                     r.personal_best = position.copy()
@@ -143,9 +145,10 @@ class ExplorationPSO:
                             self.global_best, s.get_position()):
                         self.global_best = r.personal_best.copy()
 
-            updatePSOSwarm(swarm, survivors, subswarm, pheromone_map, obstacles)
+            #updatePSOSwarm(swarm, survivors, subswarm, pheromone_map, obstacles)
 
         self.step += 1
+        updatePSOSwarm(swarm, survivors, subswarm, pheromone_map, obstacles)
 
         #if len(unfound()) == 0:
         #    print('All survivors found!')
