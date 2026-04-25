@@ -77,8 +77,9 @@ class TransportationACO:
 
                 p = improvement * pheromone
 
-                if obstacles.collision_robot(x_position, y_position, 10):
-                    p *= 0.2
+                if obstacles:
+                    if obstacles.collision_robot(x_position, y_position, 10):
+                        p *= 0.2
 
                 candidates.append((x_position, y_position))
                 probabilities.append(p)
@@ -97,21 +98,22 @@ class TransportationACO:
         new_y = ry + (y_position - ry) * move_speed
 
         # if the new positions still collide
-        if obstacles.collision_robot(new_x, new_y, robot.RADIUS):
-
-            # test every other candidate, if one doesnt collide then break loop and use that for position
-            for i in range(len(candidates)):
-                x_position, y_position = candidates[i]
-                new_x = rx + (x_position - rx) * move_speed
-                new_y = ry + (y_position - ry) * move_speed
-
-                if not obstacles.collision_robot(new_x, new_y, robot.RADIUS):
-                    print("new candidate found")
-                    break
-
-            # if loop completes and final candidate still collides, reject movement
+        if obstacles:
             if obstacles.collision_robot(new_x, new_y, robot.RADIUS):
-                return False
+
+                # test every other candidate, if one doesnt collide then break loop and use that for position
+                for i in range(len(candidates)):
+                    x_position, y_position = candidates[i]
+                    new_x = rx + (x_position - rx) * move_speed
+                    new_y = ry + (y_position - ry) * move_speed
+
+                    if not obstacles.collision_robot(new_x, new_y, robot.RADIUS):
+                        print("new candidate found")
+                        break
+
+                # if loop completes and final candidate still collides, reject movement
+                if obstacles.collision_robot(new_x, new_y, robot.RADIUS):
+                    return False
 
         robot.set_position_x(new_x)
         robot.set_position_y(new_y)
