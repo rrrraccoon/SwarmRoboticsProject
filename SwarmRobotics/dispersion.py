@@ -4,7 +4,7 @@ import pygame
 import copy
 
 
-def disperse_positions(swarm, updateDispersedSwarm, survivor, obstacles):
+def disperse_positions(swarm, updateDispersedSwarm, survivor, obstacles, subswarm, pheromone_map):
 
     max_iterations = 1000
     disperse_colour = pygame.Color(252, 137, 5)
@@ -122,12 +122,12 @@ def disperse_positions(swarm, updateDispersedSwarm, survivor, obstacles):
             if current_rss <= RSS_threshold:
                 settled.add(i)
 
-        updateDispersedSwarm(swarm, original_swarm, survivor, obstacles)
+        updateDispersedSwarm(swarm, original_swarm, survivor, obstacles, subswarm, pheromone_map)
 
     #after dispersion, reset colour
     for r in swarm:
         r.set_colour(pygame.Color(255, 0, 0))
-    updateDispersedSwarm(swarm, original_swarm, survivor, obstacles)
+    updateDispersedSwarm(swarm, original_swarm, survivor, obstacles, subswarm, pheromone_map)
 
 
 def calculateGradientX(x_position, y_position, current_RSS, anchors, obstacles):
