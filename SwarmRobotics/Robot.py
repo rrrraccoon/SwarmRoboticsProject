@@ -95,8 +95,7 @@ class Robot:
 
 
     #bias will be used to adjust exploration
-    def update_velocity(self, global_best, iteration, total_iterations,
-                               pso_evaluation, survivor_position, bias_x, bias_y):
+    def update_velocity(self, global_best, iteration, total_iterations,pso_evaluation, survivor_position, bias_x, bias_y):
 
         self.new_velocity = []
         c1 = 1.2
@@ -150,9 +149,6 @@ class Robot:
             self.position[x] += self.velocity[x]
 
         #reverse velocity if reaches bounds
-
-        # bounce off walls instead of clamping: reverse velocity component on wall hit
-        # this prevents robots from pressing against the boundary every frame
         if self.position[0] <= self.ENVIRONMENT_X_MIN + self.RADIUS:
             self.position[0] = self.ENVIRONMENT_X_MIN + self.RADIUS
             self.velocity[0] = abs(self.velocity[0])  # push right
