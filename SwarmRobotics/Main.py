@@ -45,32 +45,32 @@ def main():
 
     #create a white rect which will be the environment for the swarm
     screen.fill((255,255,255), (220, 20, 660, 600))
-    #screen.fill((0, 0, 0), (220, 600, 660, 30))
 
     #display text
-    behaviour_text = font.render('BEHAVIOURS:', True, (255,255,255))
-    screen.blit(behaviour_text, (20,20))
+    #behaviour_text = font.render('BEHAVIOURS:', True, (255,255,255))
+    #screen.blit(behaviour_text, (20,20))
 
-    size_text = font.render('Swarm Size:', True, (255, 255, 255))
-    screen.blit(size_text, (30, 180))
+    #size_text = font.render('Swarm Size:', True, (255, 255, 255))
+    #screen.blit(size_text, (30, 180))
 
-    survivor_text = font.render('Survivor Count:', True, (255, 255, 255))
-    screen.blit(survivor_text, (30, 260))
+    #survivor_text = font.render('Survivor Count:', True, (255, 255, 255))
+    #screen.blit(survivor_text, (30, 260))
 
     #exploration_text = font.render('Exploration:', True, (255, 255, 255))
     #screen.blit(exploration_text, (30, 100))
 
     #min and max labels for slider
-    min_label = font.render('0', True, (255, 255, 255))
-    max_label = font.render('30', True, (255, 255, 255))
-    screen.blit(min_label, (20, 235))  #under left end of slider
-    screen.blit(max_label, (180, 235))  #under right end of slider
+    #min_label = font.render('0', True, (255, 255, 255))
+    #max_label = font.render('30', True, (255, 255, 255))
+    #screen.blit(min_label, (20, 235))  #under left end of slider
+    #screen.blit(max_label, (180, 235))  #under right end of slider
 
     # button for displaying swarm
     display_button = pygame_gui.elements.UIButton(
         relative_rect=pygame.Rect((15, 570, 185, 40)),
         text='Display/Reset Swarm',
-        manager=MANAGER
+        manager=MANAGER,
+        tool_tip_text='Swarm displays'
     )
 
     #input box next to swarm size
@@ -99,21 +99,24 @@ def main():
     disperse_button = pygame_gui.elements.UIButton(
         relative_rect=pygame.Rect((15, 40), (185, 30)),
         text='Dispersion: OFF',
-        manager=MANAGER
+        manager=MANAGER,
+        tool_tip_text='Disperses the swarm. Uses a modified Gradient Descent Algorithm.'
     )
 
     #exploration button
     exploration_button = pygame_gui.elements.UIButton(
         relative_rect=pygame.Rect((15, 80), (185, 30)),
         text='Exploration: OFF',
-        manager=MANAGER
+        manager=MANAGER,
+        tool_tip_text='Main swarm looks for survivors, and moves towards them once detected. Uses Particle Swarm Optimisation.'
     )
 
     #transportation button
     transportation_button = pygame_gui.elements.UIButton(
         relative_rect=pygame.Rect((15, 120), (185, 30)),
         text='Transportation: OFF',
-        manager=MANAGER
+        manager=MANAGER,
+        tool_tip_text='Robots that found a survivor move in a subswarm, transporting them to the safe zone. Uses Ant Colony Optimisation.'
     )
 
     #obstacle choices dropdown
@@ -123,12 +126,11 @@ def main():
         relative_rect=pygame.Rect((25, 290), (165, 30)),
         manager=MANAGER
     )
-    draw_key()
+    draw_sidebar()
 
     # safe zone left side of environment
     SAFE_ZONE = pygame.Rect(220, 20, 100, 600)
     drawSafeZone()
-
 
     #applies changes to display
     pygame.display.flip()
@@ -142,11 +144,10 @@ def main():
     subswarm = []
     #initialise pheromone map
     pheromone_map = Transport()
-    #store prev behaviour
-    previous_behaviour = ''
-    #use the global variable within main method
+    #use the global variables within main method
     global obstacles, obstacles_made, exploration, transportation
 
+    transportation = TransportationACO()
     transporting = False
     exploring = False
     obstacles = None
@@ -174,7 +175,6 @@ def main():
             #check if text entry value has been changed
             if event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED:
                 if event.ui_object_id == "textentry":
-                    #size = int(event.text)
                     #set the slider value as the same
                     try:
                         entered_size = int(event.text)
@@ -183,7 +183,6 @@ def main():
                         swarm_slider.set_current_value(size)
                         text_input.set_text(str(size))
                     except ValueError:
-                        #print("invalid value")
                         pass
                 elif event.ui_object_id == "survivortextentry":
                     try:
@@ -192,7 +191,6 @@ def main():
                         survivor_count = max(0, min(10, entered_count))
                         survivor_text_input.set_text(str(survivor_count))
                     except ValueError:
-                        #print("invalid value")
                         pass
 
             if event.type == pygame_gui.UI_BUTTON_PRESSED:
@@ -202,9 +200,7 @@ def main():
                     survivor = createSurvivors(survivor_count)
                     display_swarm(swarm, survivor, obstacles)
                     pheromone_map = Transport()
-
-                    # prev stored behaviour resets
-                    previous_behaviour = ''
+                    transportation = TransportationACO()
 
                 if event.ui_element == disperse_button:
                     if disperse_button.text == 'Dispersion: OFF':
@@ -217,8 +213,17 @@ def main():
                             MANAGER.draw_ui(screen)
                             pygame.display.update()
 
-                            dispersion.disperse_positions(swarm, updateDispersedSwarm, survivor, obstacles)
-                            previous_behaviour = 'disperse'
+                            #if it was exploring then pause it so the swarm disperses
+                            was_exploring = exploring
+                            if was_exploring:
+                                exploring = False
+
+                            dispersion.disperse_positions(swarm, updateDispersedSwarm, survivor, obstacles, subswarm, pheromone_map)
+
+                            #continue exploring after if it was before
+                            if was_exploring:
+                                exploring = True
+
                             #after dispersion is done, resets to being off
                             disperse_button.set_text('Dispersion: OFF')
                     else:
@@ -237,7 +242,6 @@ def main():
                         else:
                             print("A swarm must be created before exploration!")
                     else:
-                        #test this result just in case
                         exploring = False
                         exploration_button.set_text('Exploration: OFF')
 
@@ -252,18 +256,15 @@ def main():
                             MANAGER.draw_ui(screen)
                             pygame.display.update()
 
-                            transportation = TransportationACO()
                             transporting = True
                         else:
-                            print("Exploration first!")
+                            print("No robots ready for transportation!")
                     else:
-                        #test this result just in case
                         transporting = False
                         transportation_button.set_text('Transportation: OFF')
 
             if event.type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED:
                 if event.ui_element == obstacles_dropdown:
-                    selected = event.text
                     #remove any obstacles (would also apply to No Obstacles option)
                     if obstacles_made:
                         obstacles.remove_obstacles(screen)
@@ -282,12 +283,6 @@ def main():
                         obstacles.display_obstacles(screen)
 
 
-
-                    #update
-                    #MANAGER.update(0)
-                    #MANAGER.draw_ui(screen)
-                    #pygame.display.update()
-
         #check if any behaviours are active
         if exploring and swarm is not None:
             explore_done = exploration.pso_search(swarm, survivor, updatePSOSwarm, subswarm, pheromone_map, obstacles)
@@ -303,16 +298,43 @@ def main():
 
         #update manager, to update every ui element in manager
         MANAGER.update(UI_REFRESH_RATE)
-        draw_key()
+        draw_sidebar()
+
+        #area for text of amount of survivors transported
+        screen.fill(interface_colour, (220, 622, 660, 20))
+        transported_count = transportation.survivors_transported if isinstance(transportation, TransportationACO) else 0
+        survivor_count_display = len(survivor) if survivor else 0
+        survivors_text = font.render(
+            'Survivors transported: ' + str(transported_count) + '/' + str(survivor_count_display),
+            True, (255, 255, 255)
+        )
+        screen.blit(survivors_text, (230, 620))
+
         MANAGER.draw_ui(screen)
         #update display
         pygame.display.update()
 
     pygame.quit()
 
-def draw_key():
-    #fill background section
-    screen.fill(interface_colour, (0, 290, 220, 220))
+def draw_sidebar():
+    #fill sidebar background section
+    screen.fill(interface_colour, (0, 0, 220, screen_height))
+
+    #display text
+    behaviour_text = font.render('BEHAVIOURS:', True, (255, 255, 255))
+    screen.blit(behaviour_text, (20, 20))
+
+    size_text = font.render('Swarm Size:', True, (255, 255, 255))
+    screen.blit(size_text, (30, 180))
+
+    survivor_text = font.render('Survivor Count:', True, (255, 255, 255))
+    screen.blit(survivor_text, (30, 260))
+
+    #min and max labels for slider
+    min_label = font.render('0', True, (255, 255, 255))
+    max_label = font.render('30', True, (255, 255, 255))
+    screen.blit(min_label, (20, 235))
+    screen.blit(max_label, (180, 235))
 
     # grey box behind key section
     screen.fill((117, 117, 117), (10, 330, 200, 220))
@@ -365,8 +387,6 @@ def display_swarm(swarm, survivor, obstacles):
 
     #create robot objects in swarm population
     for r in swarm:
-        #print(robot.return_position())
-        #print('robot added')
         r.display_robot(screen)
         pygame.display.update()
 
@@ -382,9 +402,13 @@ def create_swarm(swarmSize):
     # create robot objects in swarm population
     for i in range(swarmSize):
         robot = Robot(swarmSize)
-        # print(robot.return_position())
+        if obstacles:
+            #try different positions until it doesnt collide
+            while obstacles.collision_robot(robot.get_position_x(), robot.get_position_y(), robot.RADIUS):
+                robot = Robot(swarmSize)
+
         swarm.append(robot)
-        # print('robot added')
+
 
     return swarm, subswarm
 
@@ -403,7 +427,7 @@ def updateSwarm(swarm, survivor, obstacles):
     pygame.display.update()
 
 #to have the original swarm positions be displayed as well
-def updateDispersedSwarm(swarm, original_swarm, survivor, obstacles):
+def updateDispersedSwarm(swarm, original_swarm, survivor, obstacles, subswarm, pheromone_map):
     # reset environment by overlaying it
     screen.fill((255, 255, 255), (220, 20, 660, 600))
     drawSafeZone()
@@ -415,6 +439,11 @@ def updateDispersedSwarm(swarm, original_swarm, survivor, obstacles):
 
     for r in swarm:
         r.display_robot(screen)
+
+    if subswarm:
+        pheromone_map.draw(screen)
+        for r in subswarm:
+            r.display_robot(screen)
 
     displaySurvivors(survivor)
     pygame.display.update()
@@ -443,8 +472,13 @@ def updatePSOSwarm(swarm, survivor, subswarm, pheromone_map, obstacles):
 
 def createSurvivors(amount):
     survivors = []
-    for _ in range(amount):
-        survivors.append(Survivor())
+    for i in range(amount):
+        s = Survivor()
+
+        if obstacles:
+            while obstacles.collision_robot(s.get_position_x(), s.get_position_y(), 10):
+                s = Survivor()
+        survivors.append(s)
 
     return survivors
 
