@@ -1,8 +1,8 @@
-import sequential_dispersion
+#import sequential_dispersion
 import dispersion
-import exploration
+#import exploration
 from Transport import Transport
-import transportation
+#import transportation
 
 import pygame
 import pygame.freetype
@@ -11,6 +11,8 @@ import pygame_gui
 from Robot import Robot
 from Survivor import Survivor
 from Obstacles import Obstacles
+from ExplorationPSO import ExplorationPSO
+from TransportationACO import TransportationACO
 
 #setup pygame modules
 pygame.init()
@@ -37,15 +39,13 @@ def main():
 
     pygame.display.set_caption('Swarm Robotics: Search and Rescue Simulation')
 
-    # make screen bg grey
-    #interface_colour = pygame.Color(60, 61, 67)
     screen.fill(interface_colour)
 
     screen.fill(interface_colour, (0, 0, 220, screen.get_height()))
 
     #create a white rect which will be the environment for the swarm
     screen.fill((255,255,255), (220, 20, 660, 600))
-
+    #screen.fill((0, 0, 0), (220, 600, 660, 30))
 
     #display text
     behaviour_text = font.render('BEHAVIOURS:', True, (255,255,255))
@@ -145,8 +145,10 @@ def main():
     #store prev behaviour
     previous_behaviour = ''
     #use the global variable within main method
-    global obstacles_made
-    obstacles = None
+    global obstacles, obstacles_made, exploration, transportation
+
+    transporting = False
+    exploring = False
 
     #main loop to run pygame display until the program is quit
     running = True
@@ -222,54 +224,38 @@ def main():
                         disperse_button.set_text('Dispersion: OFF')
 
                 if event.ui_element == exploration_button:
-                    if exploration_button.text == 'Exploration: OFF':
-
-                        if swarm is not None and len(swarm) > 0 and previous_behaviour != 'explore':
+                    if exploration_button.text == 'Exploration: OFF' and exploring == False:
+                        if swarm:
                             exploration_button.set_text('Exploration: ON')
-
                             MANAGER.update(0)
                             MANAGER.draw_ui(screen)
                             pygame.display.update()
 
-                            #pso_search(swarm, survivor)
-                            exploration.pso_search(swarm,
-                                                   survivor,
-                                                   updatePSOSwarm,
-                                                   subswarm,
-                                                   pheromone_map,
-                                                   obstacles)
-
-                            previous_behaviour = 'explore'
-                            #resets to being off
-                            exploration_button.set_text('Exploration: OFF')
+                            exploration = ExplorationPSO(swarm, survivor, obstacles)
+                            exploring = True
+                        else:
+                            print("A swarm must be created before exploration!")
                     else:
+                        #test this result just in case
+                        exploring = False
                         exploration_button.set_text('Exploration: OFF')
 
+
                 if event.ui_element == transportation_button:
-                    if transportation_button.text == 'Transportation: OFF':
-                        if swarm and previous_behaviour == 'explore':
+                    if transportation_button.text == 'Transportation: OFF' and transporting == False:
+                        if subswarm:
+                            transportation_button.set_text('Transportation: ON')
+                            MANAGER.update(0)
+                            MANAGER.draw_ui(screen)
+                            pygame.display.update()
 
-                            if len(subswarm) == 0:
-                                print('No robots ready for transportation, run exploration first')
-                            else:
-                                transportation_button.set_text('Transportation: ON')
-                                MANAGER.update(0)
-                                MANAGER.draw_ui(screen)
-                                pygame.display.update()
-
-                                #run ACO transport for all robots in the subswarm
-                                transportation.transport_subswarm(
-                                    subswarm, pheromone_map,
-                                    swarm, survivor,
-                                    updatePSOSwarm,
-                                    obstacles
-                                )
-
-                                previous_behaviour = 'transport'
-                                transportation_button.set_text('Transportation: OFF')
+                            transportation = TransportationACO(subswarm, survivor, obstacles)
+                            transporting = True
                         else:
-                            print('Run exploration first before transporting')
+                            print("No robots ready for transportation!")
                     else:
+                        #test this result just in case
+                        transporting = False
                         transportation_button.set_text('Transportation: OFF')
 
             if event.type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED:
@@ -299,12 +285,23 @@ def main():
                     #MANAGER.draw_ui(screen)
                     #pygame.display.update()
 
+        #check if any behaviours are active
+        if exploring and swarm is not None:
+            explore_done = exploration.pso_search(swarm, survivor, updatePSOSwarm, subswarm, pheromone_map, obstacles)
+            if explore_done:
+                exploring = False
+                exploration_button.set_text('Exploration: OFF')
+
+        if transporting and subswarm is not None:
+            transport_done = transportation.transport_subswarm(subswarm, pheromone_map,swarm, survivor, updatePSOSwarm, obstacles)
+            if transport_done:
+                transporting = False
+                exploration_button.set_text('Transportation: OFF')
+
         #update manager, to update every ui element in manager
         MANAGER.update(UI_REFRESH_RATE)
         draw_key()
-
         MANAGER.draw_ui(screen)
-
         #update display
         pygame.display.update()
 
