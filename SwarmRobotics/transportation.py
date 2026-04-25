@@ -20,7 +20,7 @@ def aco_transport(robot, survivor, pheromone_map, obstacles):
     candidates = []
 
     # to avoid robot moving too fast/teleporting
-    move_speed = 0.2
+    move_speed = 0.1
 
     #if reached safe zone
     if SAFE_ZONE_RECT.collidepoint(rx, ry):
@@ -94,15 +94,18 @@ def aco_transport(robot, survivor, pheromone_map, obstacles):
     #if the new positions still collide
     if obstacles.collision_robot(new_x, new_y, robot.RADIUS):
 
-        #try a different random candidate instead
-        x_position, y_position = candidates[random.randrange(len(candidates))]
-        new_x = rx + (x_position - rx) * move_speed
-        new_y = ry + (y_position - ry) * move_speed
-        print("new position collides")
+        #test every other candidate, if one doesnt collide then break loop and use that for position
+        for i in range(len(candidates)):
+            x_position, y_position = candidates[i]
+            new_x = rx + (x_position - rx) * move_speed
+            new_y = ry + (y_position - ry) * move_speed
 
-        #if this still collides then reject it, in next iteration a diff random candidate may be checked
+            if not obstacles.collision_robot(new_x, new_y, robot.RADIUS):
+                print("new candidate found")
+                break
+
+        #if loop completes and final candidate still collides, reject movement
         if obstacles.collision_robot(new_x, new_y, robot.RADIUS):
-            print("new candidate rejected")
             return False
 
     robot.set_position_x(new_x)
