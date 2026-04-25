@@ -98,7 +98,10 @@ def pso_search(swarm, survivors, updatePSOSwarm, subswarm, pheromone_map, obstac
 
             #update current robots velocity
             r.update_velocity(
-                global_best, step, maxsteps, pso_evaluation,
+                global_best,
+                step,
+                maxsteps,
+                pso_evaluation,
                 min(remaining, key=lambda s: pso_evaluation(
                     r.get_position(), s.get_position())).get_position(),
                 bias_x, bias_y
@@ -112,18 +115,13 @@ def pso_search(swarm, survivors, updatePSOSwarm, subswarm, pheromone_map, obstac
             if obstacles:
 
                 if obstacles.collision_robot(position[0], position[1], r.RADIUS+1):
-                    #go back to old position
-                    r.position = old_position
-
-                    #reverse velocity if it collides with object
+                    r.position = old_position.copy()
+                    r.personal_best = r.position.copy()
                     r.velocity[0] *= -1
                     r.velocity[1] *= -1
 
-                    r.update_position()
                     print("obstacle avoided")
-
                     continue
-
 
             #update personal best against all unfound survivors
             for s in unfound():
