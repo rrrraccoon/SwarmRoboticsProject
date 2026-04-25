@@ -70,9 +70,10 @@ class TransportationACO:
 
                 # pheromone
                 pheromone = pheromone_map.get(x_position, y_position) ** alpha
-                
-                if obstacles.collision_robot(x_position, y_position, 15):
-                    pheromone *= 0.5
+
+                if obstacles:
+                    if obstacles.collision_robot(x_position, y_position, 15):
+                        pheromone *= 0.5
 
                 p = improvement * pheromone
 
@@ -133,15 +134,9 @@ class TransportationACO:
         return False
 
     def transport_subswarm(self, subswarm, pheromone_map, swarm, survivors, updatePSOSwarm, obstacles):
-        #finished = []
-        #active = list(transport_queue)
-
 
         for robot in subswarm[:]:
             survivor = robot.get_assigned_survivor()
-
-            #if survivor is None:
-             #   continue
 
             reached = self.aco_transport(robot, survivor, pheromone_map, obstacles)
 
@@ -167,13 +162,8 @@ class TransportationACO:
             updatePSOSwarm(swarm, survivors, subswarm, pheromone_map, obstacles)
             pheromone_map.evaporate()
 
-            #pygame.display.update()
-            # controls transport speed (fix speed being too fast)
-            #clock.tick(30)
-
         #true if finished transporting
         if len(subswarm) == 0:
             return True
         else:
             return False
-        #return finished
