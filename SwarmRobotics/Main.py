@@ -1,8 +1,5 @@
-#import sequential_dispersion
 import dispersion
-#import exploration
-from Transport import Transport
-#import transportation
+from Pheromones import Pheromones
 
 import pygame
 import pygame.freetype
@@ -46,25 +43,6 @@ def main():
     #create a white rect which will be the environment for the swarm
     screen.fill((255,255,255), (220, 20, 660, 600))
 
-    #display text
-    #behaviour_text = font.render('BEHAVIOURS:', True, (255,255,255))
-    #screen.blit(behaviour_text, (20,20))
-
-    #size_text = font.render('Swarm Size:', True, (255, 255, 255))
-    #screen.blit(size_text, (30, 180))
-
-    #survivor_text = font.render('Survivor Count:', True, (255, 255, 255))
-    #screen.blit(survivor_text, (30, 260))
-
-    #exploration_text = font.render('Exploration:', True, (255, 255, 255))
-    #screen.blit(exploration_text, (30, 100))
-
-    #min and max labels for slider
-    #min_label = font.render('0', True, (255, 255, 255))
-    #max_label = font.render('30', True, (255, 255, 255))
-    #screen.blit(min_label, (20, 235))  #under left end of slider
-    #screen.blit(max_label, (180, 235))  #under right end of slider
-
     # button for displaying swarm
     display_button = pygame_gui.elements.UIButton(
         relative_rect=pygame.Rect((15, 570, 185, 40)),
@@ -100,7 +78,7 @@ def main():
         relative_rect=pygame.Rect((15, 40), (185, 30)),
         text='Dispersion: OFF',
         manager=MANAGER,
-        tool_tip_text='Disperses the swarm. Uses a modified Gradient Descent Algorithm.'
+        tool_tip_text='Disperses the swarm over the environment'
     )
 
     #exploration button
@@ -108,7 +86,7 @@ def main():
         relative_rect=pygame.Rect((15, 80), (185, 30)),
         text='Exploration: OFF',
         manager=MANAGER,
-        tool_tip_text='Main swarm looks for survivors, and moves towards them once detected. Uses Particle Swarm Optimisation.'
+        tool_tip_text='Main swarm looks for survivors, and moves towards them once detected'
     )
 
     #transportation button
@@ -116,7 +94,7 @@ def main():
         relative_rect=pygame.Rect((15, 120), (185, 30)),
         text='Transportation: OFF',
         manager=MANAGER,
-        tool_tip_text='Robots that found a survivor move in a subswarm, transporting them to the safe zone. Uses Ant Colony Optimisation.'
+        tool_tip_text='Robots that found a survivor move in a subswarm, transporting them to the safe zone'
     )
 
     #obstacle choices dropdown
@@ -143,7 +121,7 @@ def main():
     #transportation subswarm
     subswarm = []
     #initialise pheromone map
-    pheromone_map = Transport()
+    pheromone_map = Pheromones()
     #use the global variables within main method
     global obstacles, obstacles_made, exploration, transportation
 
@@ -199,7 +177,7 @@ def main():
                     swarm, subswarm = create_swarm(size)
                     survivor = createSurvivors(survivor_count)
                     display_swarm(swarm, survivor, obstacles)
-                    pheromone_map = Transport()
+                    pheromone_map = Pheromones()
                     transportation = TransportationACO()
 
                 if event.ui_element == disperse_button:
@@ -344,9 +322,8 @@ def draw_sidebar():
                            'Survivor:\n\n'
                            'Dispersing:\n'
                            'Pre-dispersion\npositions:\n\n'
-                           'Exploring:\n'
-                           'Survivor Found:\n\n'
-                           'Transporting:\n',
+                           'Exploring:\n\n'
+                           'Transporting/\nSurvivor Found:\n\n',
                            True, (255, 255, 255))
     screen.blit(key_text, (20, 330))
 
@@ -365,10 +342,7 @@ def draw_sidebar():
                        (120, 480), 6)
     # survivor found
     pygame.draw.circle(screen, pygame.Color(134, 2, 250),
-                       (165, 500), 6)
-    # transportation
-    pygame.draw.circle(screen, pygame.Color(0, 255, 0),
-                       (150, 540), 6)
+                       (165, 540), 6)
 
 def drawSafeZone():
     font = pygame.font.Font('fonts/FiraCode-Regular.ttf', 15)
