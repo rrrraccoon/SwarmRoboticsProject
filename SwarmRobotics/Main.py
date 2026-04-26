@@ -78,7 +78,7 @@ def main():
         relative_rect=pygame.Rect((15, 40), (185, 30)),
         text='Dispersion: OFF',
         manager=MANAGER,
-        tool_tip_text='Disperses the swarm over the environment'
+        tool_tip_text='Spreads robots across the environment to maximise area coverage'
     )
 
     #exploration button
@@ -94,7 +94,7 @@ def main():
         relative_rect=pygame.Rect((15, 120), (185, 30)),
         text='Transportation: OFF',
         manager=MANAGER,
-        tool_tip_text='Robots that found a survivor move in a subswarm, transporting them to the safe zone'
+        tool_tip_text='Robots that have found a survivor move in a subswarm to transport them to the safe zone'
     )
 
     #obstacle choices dropdown
