@@ -162,7 +162,7 @@ class TransportationACO:
                 subswarm.remove(robot)
 
             updatePSOSwarm(swarm, survivors, subswarm, pheromone_map, obstacles)
-            pheromone_map.evaporate()
+        pheromone_map.evaporate()
 
         #true if finished transporting
         if len(subswarm) == 0:
