@@ -27,7 +27,6 @@ class ExplorationPSO:
             return True
 
         # return only unfound survivors each time this is called
-        #def unfound():
         unfound = [s for s in survivors if not s.found]
 
         if self.step >= self.MAX_STEPS or len(unfound) == 0:
@@ -89,7 +88,6 @@ class ExplorationPSO:
 
                     unfound = [s for s in survivors if not s.found]
 
-                #updatePSOSwarm(swarm, survivors, subswarm, pheromone_map, obstacles)
                 continue
 
             #if no survivors left
@@ -144,8 +142,6 @@ class ExplorationPSO:
                     if self.pso_evaluation(r.personal_best, s.get_position()) < self.pso_evaluation(
                             self.global_best, s.get_position()):
                         self.global_best = r.personal_best.copy()
-
-            #updatePSOSwarm(swarm, survivors, subswarm, pheromone_map, obstacles)
 
         self.step += 1
         updatePSOSwarm(swarm, survivors, subswarm, pheromone_map, obstacles)
