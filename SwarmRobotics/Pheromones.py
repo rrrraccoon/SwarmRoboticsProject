@@ -1,6 +1,6 @@
 import pygame
 
-class Transport:
+class Pheromones:
     # safe zone centre target for robots to move toward
     SAFE_ZONE_X = 270
     SAFE_ZONE_Y = 310
