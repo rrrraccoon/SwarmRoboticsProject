@@ -146,8 +146,4 @@ def pso_evaluation(position, survivor_position):
     y = position[1] - survivor_position[1]
     dist = math.sqrt((x ** 2) + (y ** 2))
 
-    #if an obstacle is in the way  to the survivor
-    #if obstacles:
-    #    if
-
     return dist
