@@ -100,7 +100,8 @@ class Robot:
         self.new_velocity = []
         c1 = 1.2
         c2 = 0.5
-        bias_strength = 2.0 + (iteration / total_iterations) * 3.0  #to increase/decrease exploration
+        #decrease overtime
+        bias_strength = 3.0 - (iteration / total_iterations) * 2.0
 
         min_inertia = 0.4
         max_inertia = 0.9
