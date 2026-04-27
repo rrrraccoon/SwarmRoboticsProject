@@ -23,7 +23,7 @@ class Robot:
 
         #scale max speed down for smaller swarms (avoid speed being too fast)
         speed = 0.6 + (swarm_size / 60.0)
-        #print(speed)
+
         self.min_velocity = -speed
         self.max_velocity = speed
 
@@ -94,13 +94,12 @@ class Robot:
         return self.velocity
 
 
-    #bias will be used to adjust exploration
     def update_velocity(self, global_best, iteration, total_iterations,pso_evaluation, survivor_position, bias_x, bias_y):
 
         self.new_velocity = []
         c1 = 1.2
         c2 = 0.5
-        #decrease overtime
+        #decrease exploration overtime
         bias_strength = 3.0 - (iteration / total_iterations) * 2.0
 
         min_inertia = 0.4
@@ -121,9 +120,9 @@ class Robot:
 
                 cognitive = c1 * d1 * (self.personal_best[i] - self.position[i])
 
-                #more exploration if not in range of survivor
+                #more exploration (less social strength) if not near a survivor
                 if pso_evaluation(self.position, survivor_position) > 90:
-                    social = social = c2 * d2 * (global_best[i] - self.position[i]) * 0.6
+                    social = c2 * d2 * (global_best[i] - self.position[i]) * 0.6
                 else:
                     social = c2 * d2 * (global_best[i] - self.position[i])
 
@@ -153,6 +152,7 @@ class Robot:
         if self.position[0] <= self.ENVIRONMENT_X_MIN + self.RADIUS:
             self.position[0] = self.ENVIRONMENT_X_MIN + self.RADIUS
             self.velocity[0] = abs(self.velocity[0])  # push right
+
         elif self.position[0] >= self.ENVIRONMENT_X_MAX - self.RADIUS:
             self.position[0] = self.ENVIRONMENT_X_MAX - self.RADIUS
             self.velocity[0] = -abs(self.velocity[0])  # push left
@@ -160,6 +160,7 @@ class Robot:
         if self.position[1] <= self.ENVIRONMENT_Y_MIN + self.RADIUS:
             self.position[1] = self.ENVIRONMENT_Y_MIN + self.RADIUS
             self.velocity[1] = abs(self.velocity[1])  # push down
+
         elif self.position[1] >= self.ENVIRONMENT_Y_MAX - self.RADIUS:
             self.position[1] = self.ENVIRONMENT_Y_MAX - self.RADIUS
             self.velocity[1] = -abs(self.velocity[1])  # push up
