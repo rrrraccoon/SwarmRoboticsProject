@@ -27,7 +27,7 @@ pip install pygame pygame_gui
 - **Survivor.py:** Survivor class - Survivor state and position.  
 - **Obstacles.py:** Obstacles class - Handles displaying obstacles and detecting collisions.  
 - **dispersion.py:** Dispersion behaviour - Implementation using a Modified Gradient Descent algorithm.  
-- **ExplorationACO.py:** Exploration behaviour class - Implemented using Particle Swarm Optimisation (PSO).  
+- **ExplorationPSO.py:** Exploration behaviour class - Implemented using Particle Swarm Optimisation (PSO).  
 - **TransportationACO.py:** Transportation behaviour class - Implemented using Ant Colony Optimisation (ACO).  
 - **Pheromones.py:** Pheromone class - Handles depositing, evaporating and displaying ACO pheromones during transportation. Pheromones are shown as orange within the simulation.  
 
