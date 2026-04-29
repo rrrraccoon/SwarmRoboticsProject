@@ -33,7 +33,7 @@ pip install pygame pygame_gui
 
 ## Using the simulation:
 - **Swarm size slider/input:** Set the number of robots in the swarm (0-30).  
-- **Survivor count input:** Set the number of survivors appearing in the environment.  
+- **Survivor count input:** Set the number of survivors appearing in the environment (0-10).  
 - **Obstacles dropdown menu:** Choose between displaying no obstacles or two obstacle configurations.  
 - **Key:** Colour-coded key to identify each robot and survivor state.  
 - **Display/Reset Swarm button:** Initialises the swarm and survivors in random positions in the enviroment. Clicking this again resets the swarm with any updated parameters.  
